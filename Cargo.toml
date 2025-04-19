@@ -2,6 +2,7 @@
 name = "img_hash_linker"
 version = "0.1.0"
 edition = "2024"
+license = "AGPL-3.0-only"
 
 [dependencies]
 image = "0.25.6"
