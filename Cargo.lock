@@ -500,7 +500,7 @@ dependencies = [
 
 [[package]]
 name = "img_hash_linker"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "csv",
  "fast_image_resize",
