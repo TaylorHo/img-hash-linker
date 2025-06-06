@@ -2,7 +2,12 @@
 name = "img_hash_linker"
 version = "0.1.0"
 edition = "2024"
-license = "AGPL-3.0-only"
+license = "MIT"
+authors = ["Taylor Hoffmann <taylor@hotay.dev>"]
+repository = "https://github.com/TaylorHo/img-hash-linker"
+description = "A tool for opening links from images using perceptual hashing"
+keywords = ["image", "hash", "perceptual-hash", "image-processing"]
+categories = ["algorithms", "command-line-utilities", "encoding", "parsing"]
 
 [dependencies]
 image = "0.25.6"
