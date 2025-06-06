@@ -1,4 +1,4 @@
-use img_hash_linker::compute_ahash_from_file;
+use img_hash_linker::compute_hash_from_file;
 use std::env;
 use std::process;
 
@@ -12,7 +12,7 @@ fn main() {
 
     let image_path = &args[1];
 
-    match compute_ahash_from_file(image_path) {
+    match compute_hash_from_file(image_path) {
         Ok(hash) => println!("Image hash: {}", hash),
         Err(e) => {
             eprintln!("Error: {}", e);
