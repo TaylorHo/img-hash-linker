@@ -9,13 +9,13 @@ pub fn remove_white_borders(img: &DynamicImage) -> DynamicImage {
 
     // Define a threshold for "white" - allowing for some noise/variation
     // RGB values above this threshold (out of 255) are considered "white"
-    let threshold = 240;
+    let threshold: u8 = 240;
 
     // Find the bounding box of non-white content
-    let mut min_x = width;
-    let mut min_y = height;
-    let mut max_x = 0;
-    let mut max_y = 0;
+    let mut min_x: u32 = width;
+    let mut min_y: u32 = height;
+    let mut max_x: u32 = 0;
+    let mut max_y: u32 = 0;
 
     for y in 0..height {
         for x in 0..width {

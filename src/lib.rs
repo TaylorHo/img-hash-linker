@@ -5,26 +5,41 @@ use std::path::Path;
 
 pub mod algorithm;
 
-fn compute_hash<P: AsRef<Path>>(path: P, remove_white_border: bool) -> Result<String, String> {
+/// Computes a perceptual hash of a `DynamicImage` using the ahash (average hash) algorithm.
+///
+/// ## Arguments
+///
+/// * `image` - DynamicImage (already loaded from file)
+/// * `remove_white_border` - Whether to remove white borders from the image before computing the hash
+///
+/// ## Returns
+///
+/// * `Ok(String)` - The computed perceptual hash as a hex string
+/// * `Err(String)` - Error message if the hash couldn't be computed
+pub fn compute_hash(image: DynamicImage, remove_white_border: bool) -> Result<String, String> {
+    let processed_img: DynamicImage = if remove_white_border {
+        remove_borders::remove_white_borders(&image)
+    } else {
+        image
+    };
+    Ok(ahash::compute_image_hash(&processed_img))
+}
+
+/// Computes a perceptual hash of an image file using the ahash (average hash) algorithm.
+///
+/// This function removes the image white borders before hash computation.
+///
+/// ## Arguments
+///
+/// * `path` - Path to the image file
+///
+/// ## Returns
+///
+/// * `Ok(String)` - The computed perceptual hash as a hex string
+/// * `Err(String)` - Error message if the image couldn't be opened
+pub fn compute_hash_from_file<P: AsRef<Path>>(path: P) -> Result<String, String> {
     match image::open(path) {
-        Ok(img) => {
-            let processed_img: DynamicImage = if remove_white_border {
-                remove_borders::remove_white_borders(&img)
-            } else {
-                img
-            };
-            Ok(ahash::compute_image_hash(&processed_img))
-        }
+        Ok(img) => compute_hash(img, false),
         Err(e) => Err(format!("Failed to open image: {}", e)),
     }
-}
-
-pub fn compute_hash_from_file<P: AsRef<Path>>(path: P) -> Result<String, String> {
-    compute_hash(path, false)
-}
-
-pub fn compute_hash_from_file_without_removing_borders<P: AsRef<Path>>(
-    path: P,
-) -> Result<String, String> {
-    compute_hash(path, true)
 }
