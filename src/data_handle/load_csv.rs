@@ -42,27 +42,18 @@ fn validate_csv_file(path: &String) -> Result<(Reader<File>, usize, usize), Stri
     let mut hash_index: Option<usize> = None;
     let mut link_index: Option<usize> = None;
 
-    if headers.len() == 2 {
-        // If there are exactly two columns, use them directly
-        hash_index = Some(0);
-        link_index = Some(1);
-    } else {
-        // Otherwise, look for "hash" and "link" columns
-        for (i, header) in headers.iter().enumerate() {
-            let lower_header: String = header.to_lowercase();
-            if lower_header == "hash" {
-                hash_index = Some(i);
-            } else if lower_header == "link" {
-                link_index = Some(i);
-            }
+    for (i, header) in headers.iter().enumerate() {
+        let lower_header: String = header.to_lowercase();
+        if lower_header == "hash" {
+            hash_index = Some(i);
+        } else if lower_header == "link" {
+            link_index = Some(i);
         }
     }
 
     // Check if both hash and link columns were found
     if hash_index.is_none() || link_index.is_none() {
-        return Err(format!(
-            "CSV must have either exactly two columns or columns named 'hash' and 'link'"
-        ));
+        return Err("CSV must have columns named 'hash' and 'link'".to_string());
     }
 
     Ok((reader, hash_index.unwrap(), link_index.unwrap()))

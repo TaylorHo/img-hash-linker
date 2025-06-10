@@ -86,7 +86,10 @@ hash1,https://example.com/page1
 hash2,https://example.com/page2
 ```
 
+Note: the URL part can also be an application URL handler, like `spotify://` or `vscode://`.
+
 There's an example in the root of the project: [example.csv](./example.csv)
+It's very important to have the `hash` and `link` headers (it can also have other fields, but these two will be used)
 
 ## How aHash Works
 
