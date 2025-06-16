@@ -1,99 +1,100 @@
 use image::DynamicImage;
 
-use crate::{
-    algorithm::{ahash, remove_borders},
-    data_handle::load_csv::load_data_from_csv,
-};
+use crate::algorithm::{ahash, remove_borders};
 
 pub mod algorithm;
 pub mod data_handle;
 
-/// Computes a perceptual hash of a `DynamicImage` using the ahash (average hash) algorithm.
+/// Computes a perceptual hash for the given image.
 ///
-/// ## Arguments
+/// This function processes an image by optionally removing white borders and then
+/// computing an average hash (ahash) for the processed image. The hash can be used
+/// for image similarity detection and comparison.
 ///
-/// * `image` - DynamicImage (already loaded from file)
-/// * `remove_white_border` - Whether to remove white borders from the image before computing the hash
+/// # Arguments
 ///
-/// ## Returns
+/// * `image` - A `DynamicImage` containing the image to hash
+/// * `remove_white_border` - A boolean flag indicating whether to remove white borders
+///   from the image before computing the hash
+/// * `hash_size` - An optional hash size. If `Some(size)` is provided, that size will be used.
+///   If `None` is provided, the default size of 8 will be used.
 ///
-/// * `Ok(String)` - The computed perceptual hash as a hex string
-/// * `Err(String)` - Error message if the hash couldn't be computed
-pub fn compute_hash(image: DynamicImage, remove_white_border: bool) -> Result<String, String> {
+/// # Returns
+///
+/// Returns a `Result<String, String>` where:
+/// * `Ok(String)` contains the computed hash as a string
+/// * `Err(String)` contains an error message if hash computation fails
+///
+/// # Examples
+///
+/// ```
+/// use image::DynamicImage;
+///
+/// // Compute hash with border removal and custom size
+/// let hash = compute_hash(image, true, Some(10))?;
+///
+/// // Compute hash with default settings
+/// let hash = compute_hash(image, false, None)?;
+/// ```
+pub fn compute_hash(
+    image: DynamicImage,
+    remove_white_border: bool,
+    hash_size: Option<u32>,
+) -> Result<String, String> {
     let processed_img: DynamicImage = if remove_white_border {
         remove_borders::remove_white_borders(&image)
     } else {
         image
     };
-    Ok(ahash::compute_image_hash(&processed_img))
-}
 
-/// Computes a perceptual hash of an image file using the ahash (average hash) algorithm.
-///
-/// This function removes the image white borders before hash computation.
-///
-/// ## Arguments
-///
-/// * `path` - Path to the image file
-///
-/// ## Returns
-///
-/// * `Ok(String)` - The computed perceptual hash as a hex string
-/// * `Err(String)` - Error message if the image couldn't be opened
-pub fn compute_hash_from_file(path: String) -> Result<String, String> {
-    match image::open(path) {
-        Ok(img) => compute_hash(img, true),
-        Err(e) => Err(format!("Failed to open image: {}", e)),
+    if let Some(hash_size) = hash_size {
+        Ok(ahash::compute_image_hash(&processed_img, hash_size))
+    } else {
+        Ok(ahash::compute_image_hash(&processed_img, None))
     }
 }
 
-/// Opens a link associated with a given hash from a dictionary file.
+/// Opens a link associated with the given hash.
 ///
-/// ## Arguments
+/// This function searches through a collection of hash-link pairs to find a matching hash,
+/// and if found, opens the corresponding link using the system's default application.
 ///
-/// * `links` - Structure containing hash-link pairs
-/// * `hash` - The hash to look up in the dictionary
+/// # Arguments
 ///
-/// ## Behavior
+/// * `links` - A vector of tuples where each tuple contains `(hash, link)` as `(String, String)`
+/// * `hash` - The hash string to search for in the links collection
 ///
-/// If the hash is found in the dictionary, opens the associated link.
-/// If the hash is not found, prints a message to the console.
-pub fn open_link_from_hash(links: Vec<(String, String)>, hash: String) {
-    for (h, link) in links {
-        if h == hash {
+/// # Returns
+///
+/// Returns a `Result<String, String>` where:
+/// * `Ok(String)` contains a success message with the opened link
+/// * `Err(String)` contains an error message if the hash is not found
+///
+/// # Examples
+///
+/// ```
+/// let links = vec![
+///     ("abc123".to_string(), "https://example.com".to_string()),
+///     ("def456".to_string(), "https://another.com".to_string()),
+/// ];
+///
+/// match open_link_from_hash(links, "abc123".to_string()) {
+///     Ok(message) => println!("{}", message), // "Link opened: https://example.com"
+///     Err(error) => println!("Error: {}", error),
+/// }
+/// ```
+///
+/// Getting the links vector from a csv file:
+/// ```
+/// let links: Vec<(String, String)> = load_data_from_csv("path/to/example.csv").unwrap();
+/// ```
+pub fn open_link_from_hash(links: Vec<(String, String)>, hash: String) -> Result<String, String> {
+    for (h, link) in &links {
+        if *h == hash {
             open::that(&link).unwrap();
-            return;
+            return Ok(format!("Link opened: {}", link));
         }
     }
-    println!("Hash not found: {}", hash);
-}
 
-/// Opens a link associated with a given image using its perceptual hash.
-///
-/// This function computes the hash of the provided image, removing white borders,
-/// and then opens the associated link if found in the dictionary.
-///
-/// ## Arguments
-///
-/// * `image` - DynamicImage to compute the hash from
-/// * `dict_path` - Path to the CSV file containing hash-link pairs
-pub fn open_link_from_image(image: DynamicImage, dict_path: String) {
-    let hash: String = compute_hash(image, true).unwrap();
-    let links: Vec<(String, String)> = load_data_from_csv(dict_path).unwrap();
-    open_link_from_hash(links, hash);
-}
-
-/// Opens a link associated with an image file using its perceptual hash.
-///
-/// This function loads an image from a file, computes its hash after removing
-/// white borders, and then opens the associated link if found in the dictionary
-///
-/// ## Arguments
-///
-/// * `image_path` - Path to the image file
-/// * `dict_path` - Path to the CSV file containing hash-link pairs
-pub fn open_link_from_image_file(image_path: String, dict_path: String) {
-    let hash: String = compute_hash_from_file(image_path).unwrap();
-    let links: Vec<(String, String)> = load_data_from_csv(dict_path).unwrap();
-    open_link_from_hash(links, hash);
+    Err(format!("Hash not found: {}", hash))
 }

@@ -1,6 +1,6 @@
 [package]
 name = "img_hash_linker"
-version = "1.0.1"
+version = "1.1.0"
 edition = "2024"
 license = "MIT"
 authors = ["Taylor Hoffmann <taylor@hotay.dev>"]

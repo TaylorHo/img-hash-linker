@@ -1,7 +1,10 @@
-use img_hash_linker::compute_hash_from_file;
-use img_hash_linker::open_link_from_image_file;
 use std::env;
 use std::process;
+
+use img_hash_linker::algorithm::hash_proximity::try_finding_similar_hash;
+use img_hash_linker::compute_hash;
+use img_hash_linker::data_handle::load_csv::load_data_from_csv;
+use img_hash_linker::open_link_from_hash;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -14,14 +17,28 @@ fn main() {
     }
 
     let image_path: String = args.get(1).unwrap().clone();
+    let hash: String = compute_hash(image::open(image_path).unwrap(), true, None).unwrap();
 
     if args.len() >= 3 {
         let dict_path: String = args.get(2).unwrap().clone();
-        open_link_from_image_file(image_path, dict_path);
-    } else {
-        match compute_hash_from_file(image_path) {
-            Ok(hash) => println!("Image hash: {}", hash),
-            Err(error) => eprintln!("Error: {}", error),
+        let links: Vec<(String, String)> = load_data_from_csv(dict_path).unwrap();
+
+        match open_link_from_hash(links.clone(), hash.clone()) {
+            Ok(message) => println!("{}", message),
+            Err(e) => match try_finding_similar_hash(hash.clone(), links.clone(), None) {
+                Ok((similar_hash, _link, proximity)) => {
+                    println!(
+                        "{} (Proximity: {:.2}%)",
+                        open_link_from_hash(links.clone(), similar_hash).unwrap(),
+                        proximity * 100.0
+                    );
+                }
+                Err(_) => {
+                    println!("{}", e);
+                }
+            },
         }
+    } else {
+        println!("Image hash: {}", hash);
     }
 }
