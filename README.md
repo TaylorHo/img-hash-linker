@@ -1,6 +1,12 @@
-# img_hash_linker
+<h1 align="center">img_hash_linker</h1>
+<h4 align="center">A Rust library and CLI tool for linking images to URLs via perceptual hashing.</h4>
 
-A Rust library and CLI tool for linking images to URLs via perceptual hashing.
+&nbsp;
+
+<div align="center">
+  <a href="https://doi.org/10.5281/zenodo.15677192"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.15677192.svg" alt="DOI"></a>
+</div>
+&nbsp;
 
 ## Overview
 
